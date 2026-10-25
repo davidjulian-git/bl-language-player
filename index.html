@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BL Micro-Drama Learner</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0f172a; color: #f8fafc; text-align: center; padding: 15px; margin: 0; }
+    .container { max-width: 700px; margin: 0 auto; }
+    .video-container { background: #000; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.5); position: relative; }
+    .video-wrapper { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; }
+    .video-wrapper iframe, .video-wrapper div { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
+    
+    .subtitle-card { background: #1e293b; padding: 20px; margin: 15px auto; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 1px solid #334155; }
+    
+    .zhuyin-line { font-size: 16px; color: #94a3b8; margin-bottom: 6px; letter-spacing: 2px; }
+    .hanzi-line { font-size: 28px; font-weight: bold; color: #f43f5e; margin-bottom: 8px; letter-spacing: 1px; }
+    .hanzi-line span { cursor: pointer; transition: color 0.2s; padding: 0 2px; border-radius: 4px; }
+    .hanzi-line span:hover { background: #334155; color: #38bdf8; }
+    .pinyin-line { font-size: 16px; color: #38bdf8; margin-bottom: 10px; }
+    .english-line { font-size: 17px; color: #cbd5e1; font-style: italic; border-top: 1px solid #334155; padding-top: 10px; margin-top: 10px; }
+
+    .controls { margin-top: 15px; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+    button { background: #f43f5e; color: white; border: none; padding: 10px 16px; font-size: 15px; border-radius: 8px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    button:active { background: #e11d48; transform: scale(0.98); }
+    button.secondary { background: #475569; }
+    
+    .info-panel { background: #1e293b; padding: 15px; border-radius: 10px; text-align: left; border-left: 4px solid #38bdf8; display: none; margin-top: 15px; }
+    .info-panel h4 { margin: 0 0 5px 0; color: #38bdf8; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>BL Drama Study Player</h2>
+
+    <div class="video-container">
+      <div class="video-wrapper">
+        <div id="ytplayer"></div>
+      </div>
+    </div>
+
+    <div class="subtitle-card">
+      <div class="zhuyin-line" id="zhuyinRow">Press Play on the video...</div>
+      <div class="hanzi-line" id="hanziRow" onclick="handleWordClick(event)"></div>
+      <div class="pinyin-line" id="pinyinRow"></div>
+      <div class="english-line" id="englishRow">Subtitles will sync automatically.</div>
+    </div>
+
+    <div class="controls">
+      <button onclick="loopCurrentLine()">🔄 Replay Current Line</button>
+      <button class="secondary" onclick="startShadowingRecording()">🎙️ Record & Shadow</button>
+    </div>
+
+    <audio id="shadowPlayback" controls style="display:none; margin: 15px auto; width:100%;"></audio>
+
+    <div class="info-panel" id="infoPanel">
+      <h4 id="infoTitle">Grammar & Vocabulary Breakdown</h4>
+      <p id="infoContent"></p>
+    </div>
+  </div>
+
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script>
+    // --- LESSON DATA (Update this section whenever you load a new episode) ---
+    const currentVideoId = "MhEDKXvj000"; // We Best Love Ep 1 ID
+    const scriptLines = [
+      { start: 6, end: 14, zhuyin: "ㄋㄧˇ ㄗㄞˋ ㄓㄜˋ ㄍㄢˋ ㄇㄚˊ ？ ㄟˋ ㄗㄨㄛˋ ㄏㄠˇ ㄌㄞˊ ㄍㄢˋ ㄇㄚˊ ？", hanzi: "你在這幹嘛？誒做好來幹嘛？", pinyin: "nǐ zài zhè gàn má? èi zuò hǎo lái gàn má?", english: "What are you doing here? Hey, what's going on?", grammar: "Colloquial greeting: 幹嘛 (gànmá) means 'what are you doing / what's your deal?'." },
+      { start: 17, end: 25, zhuyin: "ㄨㄛˇ ㄒㄧˇ ㄏㄨㄢ ㄋㄧˇ 。 ㄕㄨㄛˇ ㄨㄛˇ ㄒㄧˇ ㄏㄨㄢ ㄋㄧˇ", hanzi: "我喜歡你。說我喜歡你", pinyin: "wǒ xǐ huan nǐ. shuō wǒ xǐ huan nǐ", english: "I like you. Say 'I like you'.", grammar: "Core confession structure: 喜歡 (xǐhuān) = to like." },
+      { start: 34, end: 46, zhuyin: "ㄍㄢˋ ㄕㄣˊ ㄇㄜ˙ ？ ㄨㄛˇ ㄇㄣˊ ㄓ ㄐㄧㄢˊ ㄔㄨˊ ㄌㄜ˙ ㄉㄤ ㄒㄩㄥ ㄉㄧˋ ㄏㄞˊ ㄎㄜˇ ㄧˇ ㄉㄤ ㄕㄣˊ ㄇㄜ˙ ㄋㄜ˙", hanzi: "幹什麼？我們之間除了當兄弟還可以當什麼呢？", pinyin: "gàn shén me? wǒ men zhī jiān chú le dāng xiōng dì hái kě yǐ dāng shén me ne?", english: "Besides being brothers, what else can we be between us?", grammar: "Grammar pattern: 除了...還... means 'Besides... also...'." }
+    ];
+    // --------------------------------------------------------------------------
+
+    let player;
+    let currentIndex = 0;
+    let syncInterval;
+
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player('ytplayer', {
+        videoId: currentVideoId,
+        playerVars: { 'playsinline': 1, 'controls': 1 },
+        events: { 'onStateChange': onPlayerStateChange }
+      });
+    }
+
+    function onPlayerStateChange(event) {
+      if (event.data == YT.PlayerState.PLAYING) {
+        if (!syncInterval) {
+          syncInterval = setInterval(checkVideoTime, 200);
+        }
+      } else {
+        clearInterval(syncInterval);
+        syncInterval = null;
+      }
+    }
+
+    function checkVideoTime() {
+      if (!player || typeof player.getCurrentTime !== 'function') return;
+      let currentTime = player.getCurrentTime();
+      let matchedIndex = scriptLines.findIndex(line => currentTime >= line.start && currentTime <= line.end);
+
+      if (matchedIndex !== -1 && matchedIndex !== currentIndex) {
+        currentIndex = matchedIndex;
+        updateDisplay();
+      }
+    }
+
+    function updateDisplay() {
+      const line = scriptLines[currentIndex];
+      document.getElementById('zhuyinRow').innerText = line.zhuyin;
+      
+      const hanziRow = document.getElementById('hanziRow');
+      hanziRow.innerHTML = '';
+      for (let char of line.hanzi) {
+        let span = document.createElement('span');
+        span.innerText = char;
+        span.setAttribute('data-word', char);
+        hanziRow.appendChild(span);
+      }
+      
+      document.getElementById('pinyinRow').innerText = line.pinyin;
+      document.getElementById('englishRow').innerText = `"${line.english}"`;
+      document.getElementById('infoPanel').style.display = 'none';
+    }
+
+    function handleWordClick(event) {
+      if (event.target.tagName === 'SPAN') {
+        const word = event.target.getAttribute('data-word');
+        const line = scriptLines[currentIndex];
+
+        const panel = document.getElementById('infoPanel');
+        document.getElementById('infoTitle').innerText = `Selected Character: ${word}`;
+        document.getElementById('infoContent').innerText = `Sentence Context: ${line.english}\n\nGrammar Note: ${line.grammar}`;
+        panel.style.display = 'block';
+      }
+    }
+
+    function loopCurrentLine() {
+      const line = scriptLines[currentIndex];
+      player.seekTo(line.start);
+      player.playVideo();
+    }
+
+    let mediaRecorder;
+    let audioChunks = [];
+
+    async function startShadowingRecording() {
+      try {
+        player.pauseVideo();
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+
+        mediaRecorder.ondataavailable = event => { audioChunks.push(event.data); };
+        mediaRecorder.onstop = () => {
+          const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+          const playback = document.getElementById('shadowPlayback');
+          playback.src = URL.createObjectURL(audioBlob);
+          playback.style.display = 'block';
+          playback.play();
+        };
+
+        mediaRecorder.start();
+        alert("Recording your shadowing! Speak the line now. Click OK to stop recording.");
+        setTimeout(() => { mediaRecorder.stop(); }, 3000);
+      } catch (err) {
+        alert("Microphone access needed for shadowing practice: " + err);
+      }
+    }
+  </script>
+</body>
+</html>
