@@ -41,10 +41,10 @@
     </div>
 
     <div class="subtitle-card">
-      <div class="zhuyin-line" id="zhuyinRow">Press Play on the video...</div>
+      <div class="zhuyin-line" id="zhuyinRow">Loading subtitles...</div>
       <div class="hanzi-line" id="hanziRow" onclick="handleWordClick(event)"></div>
       <div class="pinyin-line" id="pinyinRow"></div>
-      <div class="english-line" id="englishRow">Subtitles will sync automatically.</div>
+      <div class="english-line" id="englishRow">Please press play.</div>
     </div>
 
     <div class="controls">
@@ -64,7 +64,7 @@
   <script>
     const currentVideoId = "MhEDKXvj000";
     const scriptLines = [
-      { start: 6, end: 14, zhuyin: "ㄋㄧˇ ㄗㄞˋ ㄓㄜˋ ㄍㄢˋ ㄇㄚˊ ？ ㄟˋ ㄗㄨㄛˋ ㄏㄠˇ ㄌㄞˊ ㄍㄢˋ ㄇㄚˊ ？", hanzi: "你在這幹嘛？誒做好來幹嘛？", pinyin: "nǐ zài zhè gàn má? èi zuò hǎo lái gàn má?", english: "What are you doing here? Hey, what's going on?", grammar: "Colloquial greeting: 幹嘛 (gànmá) means 'what are you doing / what's your deal?'." },
+      { start: 0, end: 15, zhuyin: "ㄋㄧˇ ㄗㄞˋ ㄓㄜˋ ㄍㄢˋ ㄇㄚˊ ？ ㄟˋ ㄗㄨㄛˋ ㄏㄠˇ ㄌㄞˊ ㄍㄢˋ ㄇㄚˊ ？", hanzi: "你在這幹嘛？誒做好來幹嘛？", pinyin: "nǐ zài zhè gàn má? èi zuò hǎo lái gàn má?", english: "What are you doing here? Hey, what's going on?", grammar: "Colloquial greeting: 幹嘛 (gànmá) means 'what are you doing / what's your deal?'." },
       { start: 17, end: 25, zhuyin: "ㄨㄛˇ ㄒㄧˇ ㄏㄨㄢ ㄋㄧˇ 。 ㄕㄨㄛˇ ㄨㄛˇ ㄒㄧˇ ㄏㄨㄢ ㄋㄧˇ", hanzi: "我喜歡你。說我喜歡你", pinyin: "wǒ xǐ huan nǐ. shuō wǒ xǐ huan nǐ", english: "I like you. Say 'I like you'.", grammar: "Core confession structure: 喜歡 (xǐhuān) = to like." },
       { start: 34, end: 46, zhuyin: "ㄍㄢˋ ㄕㄣˊ ㄇㄜ˙ ？ ㄨㄛˇ ㄇㄣˊ ㄓ ㄐㄧㄢˊ ㄔㄨˊ ㄌㄜ˙ ㄉㄤ ㄒㄩㄥ ㄉㄧˋ ㄏㄞˊ ㄎㄜˇ ㄧˇ ㄉㄤ ㄕㄣˊ ㄇㄜ˙ ㄋㄜ˙", hanzi: "幹什麼？我們之間除了當兄弟還可以當什麼呢？", pinyin: "gàn shén me? wǒ men zhī jiān chú le dāng xiōng dì hái kě yǐ dāng shén me ne?", english: "Besides being brothers, what else can we be between us?", grammar: "Grammar pattern: 除了...還... means 'Besides... also...'." }
     ];
@@ -77,14 +77,21 @@
       player = new YT.Player('ytplayer', {
         videoId: currentVideoId,
         playerVars: { 'playsinline': 1, 'controls': 1 },
-        events: { 'onStateChange': onPlayerStateChange }
+        events: { 
+          'onReady': onPlayerReady,
+          'onStateChange': onPlayerStateChange 
+        }
       });
+    }
+
+    function onPlayerReady(event) {
+      updateDisplay(); // Force render the first line immediately on load
     }
 
     function onPlayerStateChange(event) {
       if (event.data == YT.PlayerState.PLAYING) {
         if (!syncInterval) {
-          syncInterval = setInterval(checkVideoTime, 200);
+          syncInterval = setInterval(checkVideoTime, 100); // Check every 100ms for hyper-accurate sync
         }
       } else {
         clearInterval(syncInterval);
