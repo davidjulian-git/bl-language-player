@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"> 
+  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>BL Micro-Drama Learner</title>
+  <title>BL Micro-Drama Language Suite</title>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0f172a; color: #f8fafc; text-align: center; padding: 15px; margin: 0; }
     .container { max-width: 700px; margin: 0 auto; }
@@ -32,7 +32,7 @@
 <body>
 
   <div class="container">
-    <h2>BL Drama Study Player</h2>
+    <h2>We Best Love - Study Mode</h2>
 
     <div class="video-container">
       <div class="video-wrapper">
@@ -62,14 +62,12 @@
 
   <script src="https://www.youtube.com/iframe_api"></script>
   <script>
-    // --- LESSON DATA (Update this section whenever you load a new episode) ---
-    const currentVideoId = "MhEDKXvj000"; // We Best Love Ep 1 ID
+    const currentVideoId = "MhEDKXvj000";
     const scriptLines = [
       { start: 6, end: 14, zhuyin: "ㄋㄧˇ ㄗㄞˋ ㄓㄜˋ ㄍㄢˋ ㄇㄚˊ ？ ㄟˋ ㄗㄨㄛˋ ㄏㄠˇ ㄌㄞˊ ㄍㄢˋ ㄇㄚˊ ？", hanzi: "你在這幹嘛？誒做好來幹嘛？", pinyin: "nǐ zài zhè gàn má? èi zuò hǎo lái gàn má?", english: "What are you doing here? Hey, what's going on?", grammar: "Colloquial greeting: 幹嘛 (gànmá) means 'what are you doing / what's your deal?'." },
       { start: 17, end: 25, zhuyin: "ㄨㄛˇ ㄒㄧˇ ㄏㄨㄢ ㄋㄧˇ 。 ㄕㄨㄛˇ ㄨㄛˇ ㄒㄧˇ ㄏㄨㄢ ㄋㄧˇ", hanzi: "我喜歡你。說我喜歡你", pinyin: "wǒ xǐ huan nǐ. shuō wǒ xǐ huan nǐ", english: "I like you. Say 'I like you'.", grammar: "Core confession structure: 喜歡 (xǐhuān) = to like." },
       { start: 34, end: 46, zhuyin: "ㄍㄢˋ ㄕㄣˊ ㄇㄜ˙ ？ ㄨㄛˇ ㄇㄣˊ ㄓ ㄐㄧㄢˊ ㄔㄨˊ ㄌㄜ˙ ㄉㄤ ㄒㄩㄥ ㄉㄧˋ ㄏㄞˊ ㄎㄜˇ ㄧˇ ㄉㄤ ㄕㄣˊ ㄇㄜ˙ ㄋㄜ˙", hanzi: "幹什麼？我們之間除了當兄弟還可以當什麼呢？", pinyin: "gàn shén me? wǒ men zhī jiān chú le dāng xiōng dì hái kě yǐ dāng shén me ne?", english: "Besides being brothers, what else can we be between us?", grammar: "Grammar pattern: 除了...還... means 'Besides... also...'." }
     ];
-    // --------------------------------------------------------------------------
 
     let player;
     let currentIndex = 0;
